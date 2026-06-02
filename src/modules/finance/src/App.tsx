@@ -348,7 +348,7 @@ const MainAppContent: React.FC = () => {
   );
 };
 
-export default function App() {
+export default function FinanceApp() {
   return (
     <FinanceProvider>
       <MainAppContent />
