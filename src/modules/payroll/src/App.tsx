@@ -8,7 +8,7 @@ import Settings from './components/Settings';
 
 type Page = 'dashboard' | 'settings';
 
-function App() {
+function PayrollApp() {
   const [page, setPage] = useState<Page>('dashboard');
   const [settings, setSettings] = useState<PayrollSettings>(defaultPayrollSettings);
   const [result, setResult] = useState<PayrollResult | null>(null);
@@ -195,4 +195,4 @@ function App() {
   );
 }
 
-export default App;
+export default PayrollApp;
