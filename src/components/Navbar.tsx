@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Sun, Moon, Menu, X, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom"; // SUNTIKAN ROUTER BIAR BISA PINDAH HALAMAN BRE
 
 interface NavbarProps {
   isDarkMode: boolean;
@@ -129,7 +130,7 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
           </div>
 
           {/* Right-side actions (Dark mode toggle + Quick Contact CTA) */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleDarkMode}
@@ -138,6 +139,19 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
             >
               {isDarkMode ? <Sun className="w-5 h-5 animate-pulse" /> : <Moon className="w-5 h-5" />}
             </button>
+
+            {/* BARU: TOMBOL JELAJAHI KARYA DUAL-TEXT (DESKTOP) */}
+            <Link 
+              to="/humed-berbagi" 
+              className="flex flex-col items-center justify-center bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-400 hover:to-teal-500 text-white rounded-xl px-4 py-1 shadow-md shadow-teal-500/10 hover:scale-105 active:scale-95 transition-all text-center group border border-teal-400/20"
+            >
+              <span className="text-[11px] font-bold tracking-wide flex items-center gap-1">
+                Jelajahi Karya <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </span>
+              <span className="text-[8.5px] text-teal-100 font-medium opacity-90 tracking-tight leading-none mt-0.5">
+                (Ekosistem Digital Humed)
+              </span>
+            </Link>
 
             {/* CTA Button */}
             <a
@@ -191,7 +205,23 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
               {item.label}
             </a>
           ))}
-          <div className="pt-4 px-2">
+          
+          {/* AREA TOMBOL AKSI UTAMA DI MOBILE (RESPONSIF) */}
+          <div className="pt-4 px-2 space-y-3">
+            {/* BARU: TOMBOL JELAJAHI KARYA DUAL-TEXT (MOBILE) */}
+            <Link
+              to="/humed-berbagi"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex flex-col items-center justify-center w-full px-5 py-2.5 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 text-white text-center shadow-md shadow-teal-500/10 active:scale-[0.98] transition-all min-h-[48px]"
+            >
+              <span className="font-bold text-[14px] flex items-center gap-1">
+                Jelajahi Karya <ArrowUpRight className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] text-teal-100 opacity-90 mt-0.5">
+                (Ekosistem Digital Humed)
+              </span>
+            </Link>
+
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, "contact")}
