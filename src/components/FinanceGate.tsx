@@ -108,7 +108,7 @@ export const FinanceGate: React.FC<FinanceGateProps> = ({ children }) => {
         </button>
         
         <a 
-          href="https://wa.me/628123456789?text=Bre%20gue%20mau%20beli%20kode%20akses%20Humedly%20Finance!" 
+          href="https://wa.me/6285717306163?text=Bre%20gue%20mau%20beli%20kode%20akses%20Humedly%20Finance!" 
           target="_blank" 
           rel="noopener noreferrer"
           className="block w-full bg-white/5 text-center text-gray-300 font-semibold py-3 rounded-xl text-[11px] hover:bg-white/10 transition-all"
