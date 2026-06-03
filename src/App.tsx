@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import FinanceApp from './modules/finance/App'; 
-import PayrollApp from './modules/payroll/App'; 
+import FinanceApp from './modules/finance/src/App'; 
+import PayrollApp from './modules/payroll/src/App'; 
 
 const Home = () => (
   <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
