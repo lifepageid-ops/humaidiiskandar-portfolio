@@ -20,7 +20,7 @@ import FloatingContact from "./components/FloatingContact";
 // --- Aplikasi Ekosistem ---
 import FinanceApp from './modules/finance/src/App';
 import PayrollApp from './modules/payroll/src/App';
-
+import { FinanceGate } from './components/FinanceGate';
 // ==========================================
 // 1. KOMPONEN HALAMAN HUMED BERBAGI
 // ==========================================
@@ -256,14 +256,15 @@ export default function App() {
   );
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<PortfolioMain />} />
-        <Route path="/humed-berbagi" element={<HumedBerbagi />} />
-        <Route path="/humed-berbagi/finance" element={<FinanceApp />} />
-        <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
-        <Route path="/bacain" element={<Bacain />} />
-      </Routes>
-    </Router>
-  );
+  <Router>
+    <Routes>
+      <Route path="/" element={<PortfolioMain />} />
+      <Route path="/humed-berbagi" element={<HumedBerbagi />} />
+      {/* Baris di bawah ini sudah dibungkus aman bre */}
+      <Route path="/humed-berbagi/finance" element={<FinanceGate><FinanceApp /></FinanceGate>} /> 
+      <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
+      <Route path="/bacain" element={<Bacain />} />
+    </Routes>
+  </Router>
+);
 }
