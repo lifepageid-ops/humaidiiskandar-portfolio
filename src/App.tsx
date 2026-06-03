@@ -20,7 +20,8 @@ import FloatingContact from "./components/FloatingContact";
 // --- Aplikasi Ekosistem ---
 import FinanceApp from './modules/finance/src/App';
 import PayrollApp from './modules/payroll/src/App';
-import { FinanceGate } from './components/FinanceGate';
+import { FinanceGate } from './components/FinanceGate'; // Pengunci Premium Psikologis Gen Z
+
 // ==========================================
 // 1. KOMPONEN HALAMAN HUMED BERBAGI
 // ==========================================
@@ -196,48 +197,7 @@ export default function App() {
           <main className="flex-grow">
             <Hero onViewProjects={handleViewProjects} onContactMe={handleContactMe} onDownloadCV={() => setIsCVOpen(true)} />
             
-            {/* --- SEGMEN MENU EKOSISTEM HUMED --- */}
-            <section id="ecosystem-section" className="py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 relative z-10">
-              <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-14">
-                  <span className="text-teal-600 dark:text-teal-400 font-bold tracking-wider uppercase text-sm mb-2 block">Jelajahi Karya</span>
-                  <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-4">Ekosistem Digital</h2>
-                  <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">Eksplorasi alat bantu produktivitas dan ruang literasi yang dirancang khusus dengan pendekatan modern.</p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                  {/* Card Humed Berbagi */}
-                  <Link to="/humed-berbagi" className="group bg-slate-50 dark:bg-slate-800 rounded-3xl p-8 shadow-sm hover:shadow-2xl border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:-translate-y-2 relative overflow-hidden flex flex-col h-full">
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-teal-500 transition-all duration-300 group-hover:h-2"></div>
-                    <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                      <LayoutGrid className="text-teal-600 dark:text-teal-400 w-8 h-8" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">Humed Berbagi</h3>
-                    <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed flex-grow">
-                      Direktori tools, kalkulator, dan simulasi sistem cerdas untuk kebutuhan finansial dan SDM.
-                    </p>
-                    <div className="flex items-center text-teal-600 dark:text-teal-400 font-bold group-hover:text-teal-700 dark:group-hover:text-teal-300">
-                      Buka Direktori <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </Link>
-
-                  {/* Card Bacain */}
-                  <Link to="/bacain" className="group bg-slate-50 dark:bg-slate-800 rounded-3xl p-8 shadow-sm hover:shadow-2xl border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:-translate-y-2 relative overflow-hidden flex flex-col h-full">
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-orange-400 transition-all duration-300 group-hover:h-2"></div>
-                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                      <BookOpen className="text-orange-500 dark:text-orange-400 w-8 h-8" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">Bacain</h3>
-                    <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed flex-grow">
-                      Ruang wawasan dan literasi. Kumpulan analisis, artikel, dan catatan pengembangan kapasitas.
-                    </p>
-                    <div className="flex items-center text-orange-500 dark:text-orange-400 font-bold group-hover:text-orange-600 dark:group-hover:text-orange-300">
-                      Mulai Membaca <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            </section>
+            {/* SEGMEN EKOSISTEM LAMA DI SINI SUDAH RESMI DIHAPUS & BERSIH BRE */}
 
             <About />
             <Experience />
@@ -256,15 +216,15 @@ export default function App() {
   );
 
   return (
-  <Router>
-    <Routes>
-      <Route path="/" element={<PortfolioMain />} />
-      <Route path="/humed-berbagi" element={<HumedBerbagi />} />
-      {/* Baris di bawah ini sudah dibungkus aman bre */}
-      <Route path="/humed-berbagi/finance" element={<FinanceGate><FinanceApp /></FinanceGate>} /> 
-      <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
-      <Route path="/bacain" element={<Bacain />} />
-    </Routes>
-  </Router>
-);
+    <Router>
+      <Routes>
+        <Route path="/" element={<PortfolioMain />} />
+        <Route path="/humed-berbagi" element={<HumedBerbagi />} />
+        {/* Jalur finance diamankan gembok premium psikologis */}
+        <Route path="/humed-berbagi/finance" element={<FinanceGate><FinanceApp /></FinanceGate>} /> 
+        <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
+        <Route path="/bacain" element={<Bacain />} />
+      </Routes>
+    </Router>
+  );
 }
