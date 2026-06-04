@@ -49,7 +49,8 @@ const projects: Project[] = [
     tools: ["Program Assessment Matrix", "Excel Modeling", "Community Action Frameworks"],
     documentation: [
       {
-        src: "/images/projects/csr-empowerment-1.jpg",
+        // BARU: KITA UBAH JALUR FOTO PERTAMA INI BUAT PERCOBAAN BRE!
+        src: "/images/csr-1.jpg", 
         alt: "Pemetaan sosial dan validasi penerima manfaat program CSR",
         caption: "Pemetaan sosial & validasi penerima manfaat"
       },
