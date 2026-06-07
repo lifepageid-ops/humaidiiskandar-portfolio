@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { BookOpen, LayoutGrid, Calculator, Landmark, ArrowRight, ArrowLeft } from "lucide-react";
+// 🌟 BARU: Ditambahkan ikon 'FileText' untuk representasi CV ATS lo
+import { BookOpen, LayoutGrid, Calculator, Landmark, ArrowRight, ArrowLeft, FileText } from "lucide-react";
 
 // --- Komponen Portofolio Asli ---
 import Navbar from "./components/Navbar";
@@ -20,10 +21,11 @@ import FloatingContact from "./components/FloatingContact";
 // --- Aplikasi Ekosistem ---
 import FinanceApp from './modules/finance/src/App';
 import PayrollApp from './modules/payroll/src/App';
+import CVApp from './modules/cv-generator/CVApp'; // 🌟 BARU: IMPORT MESIN GENERATOR CV LO DI SINI BRE!
 import { FinanceGate } from './components/FinanceGate'; // Pengunci Premium Psikologis Gen Z
 
 // ==========================================
-// 1. KOMPONEN HALAMAN HUMED BERBAGI
+// 1. KOMPONEN HALAMAN HUMED BERBAGI (3-APPS UPGRADED GRID)
 // ==========================================
 const HumedBerbagi = () => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center pt-24 p-6 font-sans transition-colors duration-300 relative overflow-hidden">
@@ -33,36 +35,68 @@ const HumedBerbagi = () => (
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl w-full text-center mb-16 relative z-10">
       <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 tracking-tight">Humed Berbagi</h1>
       <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-        Kumpulan sistem cerdas untuk mendukung tata kelola finansial dan manajemen kompensasi secara riil.
+        Kumpulan sistem cerdas untuk mendukung tata kelola finansial, rekrutmen mandiri, dan manajemen kompensasi secara riil.
       </p>
     </motion.div>
     
+    {/* 🌟 UBAH: Layout grid di-upgrade menjadi 3 kolom (lg:grid-cols-3) dan max-w diperluas ke 6xl */}
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.2 }}
-      className="grid md:grid-cols-2 gap-6 w-full max-w-4xl mb-16 relative z-10"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl mb-16 relative z-10 text-left"
     >
-      <Link to="/humed-berbagi/finance" className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex items-start gap-6 transition-all hover:border-teal-400 dark:hover:border-teal-500 hover:-translate-y-1 group">
-        <div className="p-4 bg-teal-50 dark:bg-teal-900/50 rounded-2xl group-hover:scale-110 transition-transform">
-          <Landmark className="text-teal-600 dark:text-teal-400 w-8 h-8" />
+      {/* CARD 1: FINANCE APP */}
+      <Link to="/humed-berbagi/finance" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between items-start gap-4 transition-all hover:border-teal-400 dark:hover:border-teal-500 hover:-translate-y-1 group cursor-pointer">
+        <div className="flex items-start gap-4">
+          <div className="p-3.5 bg-teal-50 dark:bg-teal-900/50 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+            <Landmark className="text-teal-600 dark:text-teal-400 w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1 tracking-tight">Pencatatan Keuangan</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Sistem pelacakan arus kas cerdas terintegrasi Radar Zakat Sentinel.</p>
+          </div>
         </div>
-        <div className="text-left">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-xl mb-2">Pencatatan Keuangan</h3>
-          <p className="text-slate-500 dark:text-slate-400 leading-relaxed">Sistem pelacakan dan visualisasi arus kas untuk memantau kesehatan finansial.</p>
+        <div className="w-full text-right text-xs font-bold text-teal-500 dark:text-teal-400 flex items-center justify-end gap-1 group-hover:translate-x-1 transition-transform pt-2">
+          Buka Aplikasi <ArrowRight className="w-3.5 h-3.5" />
         </div>
       </Link>
 
-      <Link to="/humed-berbagi/payroll" className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex items-start gap-6 transition-all hover:border-orange-400 dark:hover:border-orange-500 hover:-translate-y-1 group">
-        <div className="p-4 bg-orange-50 dark:bg-orange-900/50 rounded-2xl group-hover:scale-110 transition-transform">
-          <Calculator className="text-orange-500 dark:text-orange-400 w-8 h-8" />
+      {/* CARD 2: PAYROLL APP */}
+      <Link to="/humed-berbagi/payroll" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between items-start gap-4 transition-all hover:border-orange-400 dark:hover:border-orange-500 hover:-translate-y-1 group cursor-pointer">
+        <div className="flex items-start gap-4">
+          <div className="p-3.5 bg-orange-50 dark:bg-orange-900/50 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+            <Calculator className="text-orange-500 dark:text-orange-400 w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1 tracking-tight">Sistem Payroll (TER)</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Kalkulator otomatisasi kompensasi penggajian regulasi perpajakan terbaru.</p>
+          </div>
         </div>
-        <div className="text-left">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-xl mb-2">Sistem Payroll (TER)</h3>
-          <p className="text-slate-500 dark:text-slate-400 leading-relaxed">Kalkulator otomatisasi penggajian terintegrasi dengan regulasi perpajakan terbaru.</p>
+        <div className="w-full text-right text-xs font-bold text-orange-500 dark:text-orange-400 flex items-center justify-end gap-1 group-hover:translate-x-1 transition-transform pt-2">
+          Buka Aplikasi <ArrowRight className="w-3.5 h-3.5" />
+        </div>
+      </Link>
+
+      {/* 🌟 CARD 3 BARU: CV GENERATOR SYSTEM (PREMIUM DESIGN ACCENT) */}
+      <Link to="/humed-berbagi/cv-generator" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between items-start gap-4 transition-all hover:border-cyan-400 dark:hover:border-cyan-500 hover:-translate-y-1 group cursor-pointer relative overflow-hidden">
+        {/* Badge Penarik Perhatian */}
+        <div className="absolute top-0 right-0 bg-cyan-500 text-white text-[9px] font-black px-2 py-0.5 rounded-bl-xl uppercase tracking-wider animate-pulse">Bilingual</div>
+        
+        <div className="flex items-start gap-4">
+          <div className="p-3.5 bg-cyan-50 dark:bg-cyan-900/50 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+            <FileText className="text-cyan-600 dark:text-cyan-400 w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1 tracking-tight">Hum-CV Maker</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Arsitek resume ATS-friendly (ID/EN) untuk memotong hambatan fresh graduate.</p>
+          </div>
+        </div>
+        <div className="w-full text-right text-xs font-bold text-cyan-500 dark:text-cyan-400 flex items-center justify-end gap-1 group-hover:translate-x-1 transition-transform pt-2">
+          Mulai Bikin CV <ArrowRight className="w-3.5 h-3.5" />
         </div>
       </Link>
     </motion.div>
 
-    <Link to="/" className="text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors flex items-center px-6 py-3 bg-white dark:bg-slate-900 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 relative z-10">
+    <Link to="/" className="text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors flex items-center px-6 py-3 bg-white dark:bg-slate-900 rounded-full shadow-sm border border-slate-200 dark:border-slate-800 relative z-10 cursor-pointer">
       <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
     </Link>
   </div>
@@ -78,14 +112,14 @@ const Bacain = () => (
     <p className="text-slate-600 dark:text-slate-400 text-lg mb-10 max-w-md leading-relaxed">
       Ruang literasi digital ini sedang dalam tahap perakitan. Segera hadir untuk memberikan wawasan mendalam bagi Anda.
     </p>
-    <Link to="/" className="px-8 py-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full hover:bg-slate-800 dark:hover:bg-white transition-colors shadow-lg font-bold flex items-center">
+    <Link to="/" className="px-8 py-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full hover:bg-slate-800 dark:hover:bg-white transition-colors shadow-lg font-bold flex items-center cursor-pointer">
       <ArrowLeft className="w-5 h-5 mr-2" /> Kembali ke Beranda
     </Link>
   </div>
 );
 
 // ==========================================
-// 3. KOMPONEN UTAMA (APP RENDERER)
+// 3. KOMPONEN UTAMA (APP RENDERER CORE)
 // ==========================================
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -196,9 +230,6 @@ export default function App() {
           <Navbar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
           <main className="flex-grow">
             <Hero onViewProjects={handleViewProjects} onContactMe={handleContactMe} onDownloadCV={() => setIsCVOpen(true)} />
-            
-            {/* SEGMEN EKOSISTEM LAMA DI SINI SUDAH RESMI DIHAPUS & BERSIH BRE */}
-
             <About />
             <Experience />
             <Skills />
@@ -223,6 +254,10 @@ export default function App() {
         {/* Jalur finance diamankan gembok premium psikologis */}
         <Route path="/humed-berbagi/finance" element={<FinanceGate><FinanceApp /></FinanceGate>} /> 
         <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
+        
+        {/* 🌟 BARU: MENDAFTARKAN JALUR RUTE UNTUK REKTOR CV MAKER SUTIKAN LO DI SINI BRE! */}
+        <Route path="/humed-berbagi/cv-generator" element={<CVApp />} />
+        
         <Route path="/bacain" element={<Bacain />} />
       </Routes>
     </Router>
