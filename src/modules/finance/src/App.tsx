@@ -3,7 +3,7 @@ import { FinanceProvider, useFinance } from './context/FinanceContext';
 import { MobileFrame } from './components/MobileFrame';
 import { BottomNav } from './components/BottomNav';
 import { ConceptDocumentation } from './components/ConceptDocumentation';
-import { motion } from 'framer-motion'; // 🌟 ANIMASI GERAK PREMIUM
+import { motion } from 'framer-motion'; // Animasi Premium
 
 // Screens
 import { HomeScreen } from './components/screens/HomeScreen';
@@ -39,24 +39,55 @@ import {
   Info,
   PieChart,
   WalletCards,
-  Smile
+  Smile,
+  RefreshCw
 } from 'lucide-react';
 
-// ==========================================
-// 🕌 SCREEN: ZAKAT & SHARIA SENTINEL
-// ==========================================
-const ZakatSentinelScreen: React.FC = () => {
+// ========================================================
+// 🕌 SCREEN: ZAKAT & SHARIA SENTINEL (KONEKSI LIVE CONTEXT DATA)
+// ========================================================
+interface ZakatScreenProps {
+  liveWallets: any[];
+  liveAssets: any[];
+  liveUser: any;
+}
+
+const ZakatSentinelScreen: React.FC<ZakatScreenProps> = ({ liveWallets, liveAssets, liveUser }) => {
   const [zakatMode, setZakatMode] = useState<'maal' | 'profesi'>('maal');
   const [hargaEmas, setHargaEmas] = useState(1450000); 
-  const [saldoTabungan, setSaldoTabungan] = useState(85000000);
-  const [beratEmas, setBeratEmas] = useState(25); 
-  const [investasiAset, setInvestasiAset] = useState(20000000);
 
-  // State Input Zakat Profesi (HR Domain)
-  const [gajiBulanan, setGajiBulanan] = useState(12000000);
+  // 🔄 EKSTRAKSI DATA ASLI DARI HUMEDLY CONTEXT
+  // 1. Hitung total saldo semua dompet tunai/bank yang bukan utang/paylater
+  const realWalletBalance = liveWallets
+    .filter(w => w.type !== 'paylater' && w.type !== 'credit_card')
+    .reduce((sum, w) => sum + w.balance, 0);
+
+  // 2. Cari kepemilikan emas dan hitung nilai investasi reksa dana/saham lainnya
+  const emasAsset = liveAssets.find(a => a.category?.toLowerCase() === 'emas');
+  const realGoldValue = emasAsset ? emasAsset.currentValue : 0;
+  
+  const realInvestmentValue = liveAssets
+    .filter(a => a.category?.toLowerCase() === 'investasi' || a.category?.toLowerCase() === 'saham' || a.category?.toLowerCase() === 'reksadana')
+    .reduce((sum, a) => sum + a.currentValue, 0);
+
+  // 3. Ambil data Gaji Bulanan Asli dari profil user HR
+  const realMonthlySalary = liveUser?.monthlyIncome || 0;
+
+  // State Input Simulator (Di-inisialisasi otomatis pake DATA LIVE ASLI dompet lo!)
+  const [saldoTabungan, setSaldoTabungan] = useState(realWalletBalance || 85000000);
+  const [beratEmas, setBeratEmas] = useState(25); // Standar simulasi awal gram emas
+  const [investasiAset, setInvestasiAset] = useState(realInvestmentValue || 20000000);
+  const [gajiBulanan, setGajiBulanan] = useState(realMonthlySalary || 12000000);
   const [bonusLain, setBonusLain] = useState(3000000);
 
-  // Perhitungan Zakat Maal (Tahunan)
+  // Fungsi Tombol Reset/Sinkronisasi Ulang ke Kondisi Saldo Saat Ini
+  const handleSyncWithWallet = () => {
+    setSaldoTabungan(realWalletBalance);
+    setInvestasiAset(realInvestmentValue);
+    setGajiBulanan(realMonthlySalary);
+  };
+
+  // Perhitungan Hukum Fikih Zakat Maal (Tahunan)
   const nominalEmasKonversi = beratEmas * hargaEmas;
   const totalHartaMaal = saldoTabungan + nominalEmasKonversi + investasiAset;
   const batasNishabMaal = 85 * hargaEmas;
@@ -64,9 +95,9 @@ const ZakatSentinelScreen: React.FC = () => {
   const estimasiZakatMaal = totalHartaMaal * 0.025;
   const persentaseNishabMaal = Math.min(100, Math.round((totalHartaMaal / batasNishabMaal) * 100));
 
-  // Perhitungan Zakat Profesi (Bulanan)
+  // Perhitungan Hukum Fikih Zakat Profesi (Bulanan)
   const totalPendapatanProfesi = gajiBulanan + bonusLain;
-  const batasNishabProfesi = 522 * 15000; // Standar 522kg Beras (Asumsi Rp15.000/kg)
+  const batasNishabProfesi = 522 * 15000; // Standar 522kg Beras (Asumsi rata-rata Rp15.000/kg)
   const isWajibZakatProfesi = totalPendapatanProfesi >= batasNishabProfesi;
   const estimasiZakatProfesi = totalPendapatanProfesi * 0.025;
 
@@ -77,19 +108,28 @@ const ZakatSentinelScreen: React.FC = () => {
       exit={{ opacity: 0, y: -15 }}
       className="p-4 space-y-4 max-h-[80vh] overflow-y-auto pb-24 scrollbar-none text-left"
     >
-      <div className="flex items-center gap-2">
-        <div className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+          </div>
+          <div>
+            <h2 className="text-base font-black text-amber-400 flex items-center gap-1.5 tracking-tight">
+              Aset Terhubung Live 🕌
+            </h2>
+          </div>
         </div>
-        <div>
-          <h2 className="text-base font-black text-amber-400 flex items-center gap-1.5 tracking-tight">
-            🕌 Zakat & Sharia Sentinel
-          </h2>
-          <p className="text-[10px] text-gray-400 mt-0.5 leading-none">
-            Kalkulator & radar nishab otomatis terintegrasi sistem socio-finance Islam.
-          </p>
-        </div>
+        
+        {/* TOMBOL SYNC: Biar bisa dipencet buat narik isi dompet terbaru */}
+        <button 
+          onClick={handleSyncWithWallet}
+          className="text-[9px] bg-white/5 hover:bg-white/10 text-gray-300 px-2 py-1 rounded-lg border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
+          title="Sinkronisasikan ulang dengan data dompet Humedly"
+        >
+          <RefreshCw className="w-2.5 h-2.5 text-emerald-400 animate-spin-slow" />
+          Sync Dompet
+        </button>
       </div>
 
       {/* Switcher Mode Zakat */}
@@ -115,7 +155,6 @@ const ZakatSentinelScreen: React.FC = () => {
       {/* RENDER MODE A: ZAKAT MAAL */}
       {zakatMode === 'maal' && (
         <div className="space-y-4">
-          {/* Barakah Indicator Alert Box */}
           {isWajibZakatMaal ? (
             <motion.div 
               initial={{ scale: 0.95 }}
@@ -160,7 +199,7 @@ const ZakatSentinelScreen: React.FC = () => {
 
           {/* Input Control Panel */}
           <div className="glass-card rounded-2xl p-4 border border-white/5 space-y-3">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block border-b border-white/5 pb-2">Simulasi Parameter Kekayaan</span>
+            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block block pb-2 border-b border-white/5">Simulasi Parameter Kekayaan</span>
             
             <div className="space-y-3">
               <div>
@@ -195,7 +234,7 @@ const ZakatSentinelScreen: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[10px] text-gray-400 block mb-1 font-semibold">Investasi / Reksa Dana / Saham (Rp)</label>
+                <label className="text-[10px] text-gray-400 block mb-1 font-semibold">Aset Investasi / Reksa Dana / Saham (Rp)</label>
                 <input 
                   type="number" 
                   value={investasiAset} 
@@ -288,8 +327,12 @@ const ZakatSentinelScreen: React.FC = () => {
   );
 };
 
+// ========================================================
+// MAIN APP CONTENT CORE SHELL
+// ========================================================
 const MainAppContent: React.FC = () => {
-  const { resetToDefaults } = useFinance();
+  // 🔄 KITA AMBIL DATA LIVE DARI CONTEXT UNTUK DIOPER KE MONITOR ZAKAT BRE!
+  const { resetToDefaults, wallets, assets, user } = useFinance();
   
   const [activeTab, setActiveTab] = useState('home');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -328,7 +371,8 @@ const MainAppContent: React.FC = () => {
       case 'wallets':
         return <WalletsScreen />;
       case 'zakat':
-        return <ZakatSentinelScreen />;
+        // UBAH: KITA PASOKAN DATA ASLI DARI CONTEXT KE SINIPROPS BRE!
+        return <ZakatSentinelScreen liveWallets={wallets} liveAssets={assets} liveUser={user} />;
       case 'grow':
         return (
           <div className="p-4 space-y-3 max-h-[80vh] overflow-y-auto pb-20 scrollbar-none text-left">
@@ -352,7 +396,7 @@ const MainAppContent: React.FC = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
                 <div className="w-6 h-6 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 shrink-0 flex items-center justify-center font-bold text-xs relative">
-                  <span className="relative z-10">🕌</span>
+                  <span className="relative z-10">...🕋...</span>
                   <span className="absolute inset-0 rounded-xl bg-amber-400/30 animate-ping opacity-75"></span>
                 </div>
                 <span>
