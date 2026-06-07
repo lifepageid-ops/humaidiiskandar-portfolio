@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, Briefcase, GraduationCap, Award, Sparkles, Download, 
-  Plus, Trash2, ArrowLeft, ArrowRight, Check, FileText, MessageCircle, X 
+  Plus, Trash2, ArrowLeft, ArrowRight, Check, FileText, X, Copy
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -53,7 +53,7 @@ const TRANSLATIONS = {
     step1: "Informasi Pribadi",
     step2: "Pendidikan",
     step3: "Pengalaman Kerja",
-    step4: "Informasi Tambahan & Generate",
+    step4: "Informasi Tambahan & Cetak",
     next: "Berikutnya",
     previous: "Sebelumnya",
     save: "Simpan & Lanjut",
@@ -63,10 +63,7 @@ const TRANSLATIONS = {
     optimizeAI: "Optimasi dengan AI",
     add: "Tambah",
     remove: "Hapus",
-    jobMatcher: "Pencocokan Kerja ATS",
     coverLetter: "Generator Surat Lamaran",
-    premium: "Premium Expert Review (Terima Beres) - Rp35.000",
-    matchScore: "Skor Pencocokan",
     cvSummary: "Ringkasan Profesional",
     cvEducation: "Pendidikan",
     cvExperience: "Pengalaman Kerja",
@@ -92,10 +89,7 @@ const TRANSLATIONS = {
     optimizeAI: "Optimize with AI",
     add: "Add",
     remove: "Remove",
-    jobMatcher: "ATS Job Matcher",
     coverLetter: "Cover Letter Generator",
-    premium: "Premium Expert Review (Terima Beres) - Rp35,000",
-    matchScore: "Match Score",
     cvSummary: "Professional Summary",
     cvEducation: "Education",
     cvExperience: "Professional Experience",
@@ -142,12 +136,6 @@ const DEFAULT_CV: CVData = {
   certifications: "Google Data Analytics Certificate",
 };
 
-const TEMPLATES = [
-  { id: 'classic' as TemplateType, name: 'Klasik Profesional', icon: '📋' },
-  { id: 'modern' as TemplateType, name: 'Minimalis Modern', icon: '✦' },
-  { id: 'graduate' as TemplateType, name: 'Lulusan Baru', icon: '🎓' },
-];
-
 export default function CVApp() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [cvData, setCvData] = useState<CVData>(DEFAULT_CV);
@@ -161,20 +149,12 @@ export default function CVApp() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState<string | null>(null);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
-  const [premiumForm, setPremiumForm] = useState({
-    name: "",
-    whatsapp: "",
-    email: "",
-    designChoice: "ats" as "ats" | "creative",
-  });
+  const [copiedNorek, setCopiedNorek] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState<{ type: 'pdf' | 'docx' | null; message: string }>({ type: null, message: '' });
-
-  const exportPreviewRef = useRef<HTMLDivElement>(null);
-  const exportHiddenRef = useRef<HTMLDivElement>(null);
 
   const t = (key: keyof typeof TRANSLATIONS['id']) => TRANSLATIONS[language][key];
 
+  // Load from LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('humcv-wizard-data');
     const savedLang = localStorage.getItem('humcv-language');
@@ -187,6 +167,7 @@ export default function CVApp() {
     if (savedTemplate) setSelectedTemplate(savedTemplate as TemplateType);
   }, []);
 
+  // Auto-save
   useEffect(() => {
     const timer = setInterval(() => {
       localStorage.setItem('humcv-wizard-data', JSON.stringify(cvData));
@@ -199,22 +180,13 @@ export default function CVApp() {
   }, [cvData, currentStep, language, selectedTemplate]);
 
   const updatePersonal = (field: keyof PersonalInfo, value: string) => {
-    setCvData(prev => ({
-      ...prev,
-      personal: { ...prev.personal, [field]: value }
-    }));
+    setCvData(prev => ({ ...prev, personal: { ...prev.personal, [field]: value } }));
   };
 
   const addEducation = () => {
     setCvData(prev => ({
       ...prev,
-      education: [...prev.education, {
-        id: Date.now().toString(),
-        institution: "",
-        degree: "",
-        period: "",
-        gpa: "",
-      }]
+      education: [...prev.education, { id: Date.now().toString(), institution: "", degree: "", period: "", gpa: "" }]
     }));
   };
 
@@ -226,23 +198,13 @@ export default function CVApp() {
   };
 
   const removeEducation = (id: string) => {
-    setCvData(prev => ({
-      ...prev,
-      education: prev.education.filter(item => item.id !== id)
-    }));
+    setCvData(prev => ({ ...prev, education: prev.education.filter(item => item.id !== id) }));
   };
 
   const addExperience = () => {
     setCvData(prev => ({
       ...prev,
-      experience: [...prev.experience, {
-        id: Date.now().toString(),
-        title: "",
-        company: "",
-        location: "",
-        period: "",
-        description: "",
-      }]
+      experience: [...prev.experience, { id: Date.now().toString(), title: "", company: "", location: "", period: "", description: "" }]
     }));
   };
 
@@ -254,10 +216,7 @@ export default function CVApp() {
   };
 
   const removeExperience = (id: string) => {
-    setCvData(prev => ({
-      ...prev,
-      experience: prev.experience.filter(item => item.id !== id)
-    }));
+    setCvData(prev => ({ ...prev, experience: prev.experience.filter(item => item.id !== id) }));
   };
 
   const addSkill = (type: 'hard' | 'soft', skill: string) => {
@@ -271,10 +230,7 @@ export default function CVApp() {
 
   const removeSkill = (type: 'hard' | 'soft', skill: string) => {
     const key = type === 'hard' ? 'hardSkills' : 'softSkills';
-    setCvData(prev => ({
-      ...prev,
-      [key]: prev[key].filter(s => s !== skill)
-    }));
+    setCvData(prev => ({ ...prev, [key]: prev[key].filter(s => s !== skill) }));
   };
 
   const optimizeWithAI = async (section: 'summary' | 'description' | 'skills', id?: string) => {
@@ -363,54 +319,76 @@ export default function CVApp() {
     }
   };
 
-  const generatePreview = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setShowPreviewModal(true);
-      setIsGenerating(false);
-    }, 600);
+  const generateCoverLetter = () => {
+    if (!coverJobTitle.trim() || !coverCompany.trim()) {
+      alert(language === 'id' ? '⚠️ Harap isi jabatan dan nama perusahaan tujuan terlebih dahulu bre!' : '⚠️ Please enter target job title and company name first!');
+      return;
+    }
+
+    const letter = language === 'id' 
+      ? `Yth. Bapak/Ibu Hiring Manager,\n\nSaya menulis surat ini untuk melamar posisi ${coverJobTitle} di ${coverCompany}. Dengan latar belakang pendidikan dan kompetensi profesional yang saya miliki, saya yakin dapat memberikan kontribusi yang positif serta solutif bagi kemajuan tim Anda.\n\n${cvData.personal.summary || ''}\n\nSaya sangat antusias dengan kesempatan untuk bergabung bersama ${coverCompany} dan siap untuk berdiskusi lebih lanjut dalam sesi interview.\n\nHormat saya,\n${cvData.personal.fullName || ''}`
+      : `Dear Hiring Manager,\n\nI am writing to express my strong interest in the ${coverJobTitle} position at ${coverCompany}. Backed by my educational architecture and core professional competencies, I am confident in my ability to deliver highly impactful solutions to your team.\n\n${cvData.personal.summary || ''}\n\nI am genuinely excited about the prospect of joining ${coverCompany} and welcome the opportunity for an interview discussion.\n\nBest regards,\n${cvData.personal.fullName || ''}`;
+
+    setGeneratedCoverLetter(letter);
   };
 
-  // ========================================================
-  // 🌟 FIX DOWNLOAD PDF: PERBAIKAN KOORDINAT & CLONING CANVAS
-  // ========================================================
+  const handleCopyNorek = () => {
+    navigator.clipboard.writeText("7186886326");
+    setCopiedNorek(true);
+    setTimeout(() => setCopiedNorek(false), 3000);
+  };
+
   const downloadPDF = async () => {
     setIsGenerating(true);
-    setDownloadStatus({ type: 'pdf', message: '' });
+    setDownloadStatus({ type: 'pdf', message: 'Sedang mengalkulasi dimensi & mencetak PDF...' });
 
     try {
-      const exportElement = exportHiddenRef.current;
+      const exportElement = document.getElementById('canvas-preview-target') as HTMLDivElement;
       if (!exportElement) {
-        throw new Error('Element export tidak tersedia');
+        throw new Error('Target rendering kawat tidak ditemukan');
       }
 
-      // Pastikan elemen terlihat sejenak oleh engine html2canvas
-      exportElement.style.opacity = "1";
-      
       const canvas = await html2canvas(exportElement, { 
-        scale: 2,
+        scale: 2.5, 
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
+        scrollY: -window.scrollY,
+        scrollX: 0,
+        windowWidth: exportElement.scrollWidth,
+        windowHeight: exportElement.scrollHeight
       });
-
-      exportElement.style.opacity = "0"; // sembunyikan kembali
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const ratio = pdfWidth / canvas.width;
+      const ratio = pdfWidth / imgWidth;
       const imgHeightPdf = imgHeight * ratio;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightPdf);
+      let heightLeft = imgHeightPdf;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightPdf);
+      heightLeft -= pdfPageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeightPdf;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightPdf);
+        heightLeft -= pdfPageHeight;
+      }
+
       const fileName = `${(cvData.personal.fullName || 'CV').replace(/\s+/g, '_')}_Hum-CV.pdf`;
       pdf.save(fileName);
 
-      setDownloadStatus({ type: 'pdf', message: '✅ PDF berhasil diunduh!' });
+      setDownloadStatus({ type: 'pdf', message: '✅ PDF Berhasil diunduh!' });
     } catch (err) {
       console.error('Download PDF error:', err);
-      setDownloadStatus({ type: 'pdf', message: '⚠️ Gagal membuat PDF. Silakan coba klik ulang.' });
+      setDownloadStatus({ type: 'pdf', message: '⚠️ Gagal mencetak. Silakan ulangi kembali.' });
     } finally {
       setTimeout(() => {
         setIsGenerating(false);
@@ -419,12 +397,9 @@ export default function CVApp() {
     }
   };
 
-  // ========================================================
-  // 🌟 FIX WORD DOWNLOAD: CLEAN WORD-READY ENCODED BLOB
-  // ========================================================
   const downloadDOCX = () => {
     setIsGenerating(true);
-    setDownloadStatus({ type: 'docx', message: '' });
+    setDownloadStatus({ type: 'docx', message: 'Mengekspor ke format dokumen Word...' });
 
     try {
       const expTitle = selectedTemplate === 'graduate' ? t('cvInternship') : t('cvExperience');
@@ -432,7 +407,7 @@ export default function CVApp() {
       let expHtml = '';
       cvData.experience.forEach(exp => {
         expHtml += `
-          <div style="margin-bottom: 14px;">
+          <div style="margin-bottom: 12px;">
             <p style="margin:0; font-size:12pt; font-weight:bold; color:#0f172a;">${exp.title} — ${exp.company}</p>
             <p style="margin:2px 0 6px 0; font-size:10pt; color:#64748b;">${exp.period} | ${exp.location}</p>
             <p style="margin:0; font-size:10.5pt; color:#334155; text-align:justify;">${exp.description.replace(/\n/g, '<br/>')}</p>
@@ -456,12 +431,12 @@ export default function CVApp() {
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
           <meta charset='utf-8'>
-          <title>CV</title>
+          <title>Curriculum Vitae</title>
           <style>
-            body { font-family: 'Arial', sans-serif; color: #1e293b; line-height: 1.5; padding: 20px; }
+            body { font-family: 'Arial', sans-serif; color: #1e293b; line-height: 1.5; padding: 30px; }
             h1 { font-size: 24pt; font-weight: bold; margin-bottom: 4px; text-align: center; color: #0f172a; text-transform: uppercase; }
             .contact { font-size: 10pt; color: #475569; text-align: center; margin-bottom: 20px; }
-            h2 { font-size: 11pt; color: #0284c7; letter-spacing: 1px; border-bottom: 2px solid #0284c7; padding-bottom: 3px; margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
+            h2 { font-size: 11pt; color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 3px; margin-top: 20px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
             p { font-size: 10.5pt; color: #334155; margin-bottom: 8px; }
           </style>
         </head>
@@ -471,16 +446,14 @@ export default function CVApp() {
             ${cvData.personal.location}  |  ${cvData.personal.phone}  |  ${cvData.personal.email}
             ${cvData.personal.linkedin ? `  |  ${cvData.personal.linkedin}` : ''}
           </div>
-          
           ${cvData.personal.summary ? `<h2>${t('cvSummary').toUpperCase()}</h2><p style="text-align:justify;">${cvData.personal.summary}</p>` : ''}
           ${cvData.experience.length > 0 ? `<h2>${expTitle.toUpperCase()}</h2>${expHtml}` : ''}
           ${cvData.education.length > 0 ? `<h2>${t('cvEducation').toUpperCase()}</h2>${eduHtml}` : ''}
           ${allSkills ? `<h2>${t('cvSkills').toUpperCase()}</h2><p>${allSkills}</p>` : ''}
-          
           ${(cvData.languages || cvData.certifications) ? `
             <h2>${t('cvOthers').toUpperCase()}</h2>
             ${cvData.languages ? `<p><strong>${t('cvLanguage')}</strong> ${cvData.languages}</p>` : ''}
-            ${cvData.certifications ? `<p><strong>${t('cvCertification')}</strong> ${cvData.certifications.replace(/\n/g, '<br/>')}</p>` : ''}
+            ${cvData.certifications ? `<p><strong>${t('cvCertification')}</strong><br/>${cvData.certifications.replace(/\n/g, '<br/>')}</p>` : ''}
           ` : ''}
         </body>
         </html>
@@ -499,7 +472,7 @@ export default function CVApp() {
       setDownloadStatus({ type: 'docx', message: '✅ File Word (.doc) berhasil diunduh!' });
     } catch (err) {
       console.error('Download DOCX error:', err);
-      setDownloadStatus({ type: 'docx', message: '⚠️ Gagal membuat file Word.' });
+      setDownloadStatus({ type: 'docx', message: '⚠️ Gagal mengekspor file Word.' });
     } finally {
       setTimeout(() => {
         setIsGenerating(false);
@@ -508,435 +481,125 @@ export default function CVApp() {
     }
   };
 
-  const handlePremiumSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const message = `Halo, saya ingin menggunakan layanan Premium Expert Review (Terma Beres).\n\nNama: ${premiumForm.name}\nWhatsApp: ${premiumForm.whatsapp}\nEmail: ${premiumForm.email}\nPilihan Desain: ${premiumForm.designChoice === 'ats' ? 'ATS-Friendly' : 'Creative'}\n\nTerima kasih!`;
-    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(message)}`, '_blank');
-    setShowPremiumModal(false);
-    alert('Mengalihkan ke WhatsApp...');
-  };
-
-  const nextStep = () => { if (currentStep < 4) setCurrentStep((currentStep + 1) as Step); };
-  const prevStep = () => { if (currentStep > 1) setCurrentStep((currentStep - 1) as Step); };
-  const goToStep = (step: Step) => setCurrentStep(step);
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl mb-3">
-                <User className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step1')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Mulai dengan informasi dasar Anda</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-left">
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-300 mb-2">Nama Lengkap</label>
-                <input
-                  type="text"
-                  value={cvData.personal.fullName}
-                  onChange={(e) => updatePersonal('fullName', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400"
-                  placeholder="Sinta Wijaya"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Lokasi</label>
-                <input
-                  type="text"
-                  value={cvData.personal.location}
-                  onChange={(e) => updatePersonal('location', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400"
-                  placeholder="Jakarta, Indonesia"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Nomor Telepon / WhatsApp</label>
-                <input
-                  type="tel"
-                  value={cvData.personal.phone}
-                  onChange={(e) => updatePersonal('phone', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400"
-                  placeholder="+62 812-3456-7890"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={cvData.personal.email}
-                  onChange={(e) => updatePersonal('email', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400"
-                  placeholder="sinta@email.com"
-                />
-              </div>
-            </div>
-
-            <div className="text-left">
-              <label className="block text-sm font-bold text-slate-300 mb-2">LinkedIn / Portofolio</label>
-              <input
-                type="text"
-                value={cvData.personal.linkedin}
-                onChange={(e) => updatePersonal('linkedin', e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400"
-                placeholder="linkedin.com/in/sintawijaya"
-              />
-            </div>
-
-            {aiMessage && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-3 rounded-2xl text-sm text-center">
-                {aiMessage}
-              </div>
-            )}
-
-            <div className="text-left">
-              <div className="flex justify-between items-center mb-3">
-                <label className="block text-sm font-bold text-slate-300">Ringkasan Profesional</label>
-                <button
-                  onClick={() => optimizeWithAI('summary')}
-                  disabled={isOptimizing === 'summary'}
-                  className="flex items-center gap-2 text-xs px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4" /> {t('optimizeAI')}
-                </button>
-              </div>
-              <textarea
-                value={cvData.personal.summary}
-                onChange={(e) => updatePersonal('summary', e.target.value)}
-                rows={4}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-2xl focus:outline-none focus:border-emerald-400 resize-none"
-                placeholder="Tulis ringkasan profesional yang kuat..."
-              />
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl mb-3">
-                <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step2')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Tambahkan riwayat pendidikan Anda</p>
-            </div>
-
-            {cvData.education.map((edu, index) => (
-              <div key={edu.id} className="border border-white/10 bg-white/[0.02] rounded-3xl p-5 relative text-left">
-                <button onClick={() => removeEducation(edu.id)} className="absolute top-5 right-5 text-slate-500 hover:text-red-400 cursor-pointer">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <div className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Pendidikan #{index + 1}</div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Nama Institusi</label>
-                    <input
-                      value={edu.institution}
-                      onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="Universitas Indonesia"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Gelar / Jurusan</label>
-                    <input
-                      value={edu.degree}
-                      onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="Sarjana Manajemen"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-2">Periode</label>
-                      <input
-                        value={edu.period}
-                        onChange={(e) => updateEducation(edu.id, 'period', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                        placeholder="2018 - 2022"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-2">IPK</label>
-                      <input
-                        value={edu.gpa}
-                        onChange={(e) => updateEducation(edu.id, 'gpa', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                        placeholder="3.85"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button onClick={addEducation} className="w-full py-3.5 border border-dashed border-white/20 hover:border-emerald-500/50 rounded-2xl text-slate-400 hover:text-emerald-400 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-              <Plus className="w-4 h-4" /> {t('add')} Pendidikan
-            </button>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl mb-3">
-                <Briefcase className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step3')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Tambahkan pengalaman kerja atau magang</p>
-            </div>
-
-            {cvData.experience.map((exp, index) => (
-              <div key={exp.id} className="border border-white/10 bg-white/[0.02] rounded-3xl p-5 relative text-left">
-                <button onClick={() => removeExperience(exp.id)} className="absolute top-5 right-5 text-slate-500 hover:text-red-400 cursor-pointer">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <div className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Pengalaman #{index + 1}</div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Jabatan</label>
-                    <input
-                      value={exp.title}
-                      onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="Manajer Produk"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Perusahaan</label>
-                    <input
-                      value={exp.company}
-                      onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="PT. Teknologi Indonesia"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Lokasi</label>
-                    <input
-                      value={exp.location}
-                      onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="Jakarta"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Periode</label>
-                    <input
-                      value={exp.period}
-                      onChange={(e) => updateExperience(exp.id, 'period', e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold"
-                      placeholder="2022 - Sekarang"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex justify-between mb-2">
-                    <label className="block text-xs font-bold text-slate-300">Deskripsi Kerja</label>
-                    <button onClick={() => optimizeWithAI('description', exp.id)} className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-lg cursor-pointer">
-                      ✨ AI Optimize
-                    </button>
-                  </div>
-                  <textarea
-                    value={exp.description}
-                    onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl resize-none"
-                    placeholder="Deskripsikan tanggung jawab..."
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button onClick={addExperience} className="w-full py-3.5 border border-dashed border-white/20 hover:border-amber-500/50 rounded-2xl text-slate-400 hover:text-amber-400 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-              <Plus className="w-4 h-4" /> {t('add')} Pengalaman
-            </button>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-2xl mb-3">
-                <Award className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step4')}</h2>
-            </div>
-
-            <div className="space-y-5 text-left">
-              <div>
-                <label className="font-bold text-slate-300 block mb-2">Hard Skills</label>
-                <div className="flex gap-2">
-                  <input id="hardSkill" type="text" placeholder="Contoh: Figma, SQL..." className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" />
-                  <button onClick={() => { const input = document.getElementById('hardSkill') as HTMLInputElement; if (input?.value) { addSkill('hard', input.value); input.value = ''; } }} className="px-6 bg-white text-black font-black rounded-xl text-xs sm:text-sm cursor-pointer">Tambah</button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {cvData.hardSkills.map((s, i) => <span key={i} className="bg-white/5 border border-white/10 px-3 py-1 rounded-lg text-xs flex items-center gap-1.5">{s}<X className="w-3 h-3 text-slate-500 hover:text-red-400 cursor-pointer" onClick={() => removeSkill('hard', s)} /></span>)}
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-300 block mb-2">Soft Skills</label>
-                <div className="flex gap-2">
-                  <input id="softSkill" type="text" placeholder="Contoh: Komunikasi..." className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" />
-                  <button onClick={() => { const input = document.getElementById('softSkill') as HTMLInputElement; if (input?.value) { addSkill('soft', input.value); input.value = ''; } }} className="px-6 bg-white text-black font-black rounded-xl text-xs sm:text-sm cursor-pointer">Tambah</button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {cvData.softSkills.map((s, i) => <span key={i} className="bg-white/5 border border-white/10 px-3 py-1 rounded-lg text-xs flex items-center gap-1.5">{s}<X className="w-3 h-3 text-slate-500 hover:text-red-400 cursor-pointer" onClick={() => removeSkill('soft', s)} /></span>)}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-300 block mb-2">Bahasa</label>
-                  <textarea value={cvData.languages} onChange={(e) => setCvData(p => ({ ...p, languages: e.target.value }))} className="w-full h-24 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl resize-none" placeholder="Indonesia, Inggris..." />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-300 block mb-2">Sertifikasi</label>
-                  <textarea value={cvData.certifications} onChange={(e) => setCvData(p => ({ ...p, certifications: e.target.value }))} className="w-full h-24 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl resize-none" placeholder="Google Data Analytics..." />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 text-center mt-8">
-              <h3 className="font-black text-lg text-white mb-4">Siap Cetak Ekosistem Resume Anda?</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onClick={generatePreview} className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-teal-500/10">
-                  <Check className="w-4 h-4" /> {t('generatePreview')}
-                </button>
-                <button onClick={() => setShowCoverModal(true)} className="bg-white/5 border border-white/10 text-slate-300 font-medium h-14 rounded-2xl flex items-center justify-center gap-2 cursor-pointer">
-                  <FileText className="w-4 h-4" /> {t('coverLetter')}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      default: return null;
-    }
-  };
-
   // ========================================================
-  // 🌟 PREVIEW CONTENT: ANTI-INHERITANCE CSS (KUNCI WARNA MUTLAK)
+  // 🌟 PREVIEW CONTENT: STRUKTUR IMPLEMENTASI DESAIN DENGAN LOGIKA OBJEK REAKSI MURNI
   // ========================================================
-  const PreviewContent = ({ template, isExportMode = false, customRef }: { template: TemplateType; isExportMode?: boolean; customRef?: React.MutableRefObject<HTMLDivElement | null>; }) => {
-    const style = template === 'modern' 
-      ? { text: 'color: #0d9488 !important;', border: 'border-bottom: 3px solid #0d9488 !important;', mainBorder: 'border-top: 8px solid #0d9488 !important;' }
-      : template === 'graduate'
-        ? { text: 'color: #7c3aed !important;', border: 'border-bottom: 3px solid #7c3aed !important;', mainBorder: 'border-top: 8px solid #7c3aed !important;' }
-        : { text: 'color: #1e293b !important;', border: 'border-bottom: 3px solid #1e293b !important;', mainBorder: 'border-top: 8px solid #1e293b !important;' };
-
-    const containerStyle = isExportMode
-      ? "width: 210mm; min-height: 297mm; padding: 20mm; margin: 0 auto; bg-white text-left text-slate-800"
-      : "width: 100%; max-width: 210mm; min-height: 297mm; padding: 15mm; margin: 0 auto; bg-white text-left text-slate-800 shadow-2xl rounded-2xl";
+  const PreviewContent = ({ template }: { template: TemplateType }) => {
+    const theme = {
+      classic: { primary: '#1e293b', secondary: '#475569', line: '#2563eb', borderStyle: '3px solid #1e293b' },
+      modern: { primary: '#0d9488', secondary: '#115e59', line: '#0d9488', borderStyle: '3px solid #0d9488' },
+      graduate: { primary: '#6d28d9', secondary: '#5b21b6', line: '#7c3aed', borderStyle: '3px solid #7c3aed' }
+    }[template];
 
     return (
       <div 
-        ref={customRef || exportPreviewRef} 
-        className="html2pdf__page-break bg-white p-8 text-left text-slate-800 font-sans"
+        id="canvas-preview-target"
+        className="html2pdf__canvas-source"
         style={{
-          width: isExportMode ? '210mm' : '100%',
+          width: '100%',
           maxWidth: '210mm',
           minHeight: '297mm',
           backgroundColor: '#ffffff',
-          color: '#1e293b',
+          padding: '18mm',
           fontFamily: 'Arial, sans-serif',
           lineHeight: '1.5',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          textAlign: 'left'
         }}
       >
-        {/* RESET FORCE INLINE STYLE UNTUK MERUSAK WARNA GELAP PORTFOLIO */}
-        <div style={{ textAlign: 'center', paddingBottom: '20px', ...Object.fromEntries(style.mainBorder.split(';').map(s => s.split(':')) as any) }}>
-          <h1 style={{ fontSize: '26pt', fontWeight: 'bold', color: '#0f172a', margin: '0', textTransform: 'uppercase', letterSpacing: '-1px' }}>
+        {/* HEADER */}
+        <div style={{ textAlign: template === 'classic' ? 'center' : 'left', paddingBottom: '15px', borderBottom: theme.borderStyle }}>
+          <h1 style={{ fontSize: '26pt', fontWeight: 'bold', color: '#0f172a', margin: '0', textTransform: 'uppercase' }}>
             {cvData.personal.fullName || 'Nama Lengkap'}
           </h1>
-          <p style={{ fontSize: '10pt', color: '#64748b', margin: '8px 0 0 0', fontWeight: '500' }}>
+          <p style={{ fontSize: '10pt', color: '#475569', margin: '6px 0 0 0', fontWeight: '500' }}>
             {cvData.personal.location}  |  {cvData.personal.phone}  |  {cvData.personal.email}
             {cvData.personal.linkedin ? `  |  ${cvData.personal.linkedin}` : ''}
           </p>
         </div>
 
+        {/* SUMMARY */}
         {cvData.personal.summary && (
-          <div style={{ marginTop: '20px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', letterSpacing: '1px', paddingBottom: '4px', margin: '0 0 8px 0', textTransform: 'uppercase', ...Object.fromEntries(style.text.concat(style.border).split(';').map(s => s.split(':')) as any) }}>
+          <div style={{ marginTop: '16px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 6px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
               {t('cvSummary')}
             </h2>
-            <p style={{ fontSize: '10.5pt', color: '#334155', margin: '0', textAlign: 'justify' }}>{cvData.personal.summary}</p>
+            <p style={{ fontSize: '10pt', color: '#334155', margin: '0', textAlign: 'justify' }}>{cvData.personal.summary}</p>
           </div>
         )}
 
-        {cvData.experience.length > 0 && (
-          <div style={{ marginTop: '25px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', letterSpacing: '1px', paddingBottom: '4px', margin: '0 0 12px 0', textTransform: 'uppercase', ...Object.fromEntries(style.text.concat(style.border).split(';').map(s => s.split(':')) as any) }}>
-              {template === 'graduate' ? t('cvInternship') : t('cvExperience')}
-            </h2>
-            {cvData.experience.map(exp => (
-              <div key={exp.id} style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: '0', fontSize: '11.5pt', fontWeight: 'bold', color: '#0f172a' }}>{exp.title}</p>
-                    <p style={{ margin: '2px 0 0 0', fontSize: '10pt', fontWeight: 'bold', ...Object.fromEntries(style.text.split(';').map(s => s.split(':')) as any) }}>{exp.company}</p>
-                  </div>
-                  <div style={{ textAlign: 'right', fontSize: '9.5pt', color: '#64748b', fontWeight: 'bold' }}>
-                    <p style={{ margin: '0' }}>{exp.period}</p>
-                    <p style={{ margin: '2px 0 0 0' }}>{exp.location}</p>
-                  </div>
-                </div>
-                <p style={{ margin: '6px 0 0 0', fontSize: '10pt', color: '#475569', textAlign: 'justify', whiteSpace: 'pre-line' }}>{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {cvData.education.length > 0 && (
-          <div style={{ marginTop: '25px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', letterSpacing: '1px', paddingBottom: '4px', margin: '0 0 12px 0', textTransform: 'uppercase', ...Object.fromEntries(style.text.concat(style.border).split(';').map(s => s.split(':')) as any) }}>
+        {/* EDUCATION (Untuk template Freshgraduate ditaruh di atas) */}
+        {template === 'graduate' && cvData.education.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 8px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
               {t('cvEducation')}
             </h2>
             {cvData.education.map(edu => (
-              <div key={edu.id} style={{ marginBottom: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: '0', fontSize: '11.5pt', fontWeight: 'bold', color: '#0f172a' }}>{edu.degree}</p>
-                    <p style={{ margin: '2px 0 0 0', fontSize: '10pt', color: '#475569' }}>{edu.institution}</p>
-                  </div>
-                  <div style={{ textAlign: 'right', fontSize: '9.5pt', color: '#64748b', fontWeight: 'bold' }}>
-                    <p style={{ margin: '0' }}>{edu.period}</p>
-                    {edu.gpa && <p style={{ margin: '2px 0 0 0', color: '#0f172a' }}>{t('cvGpa')}: {edu.gpa}</p>}
-                  </div>
+              <div key={edu.id} style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '10.5pt', fontWeight: 'bold', color: '#0f172a' }}>{edu.degree} — <span style={{ fontWeight: 'normal', color: '#475569' }}>{edu.institution}</span></span>
+                  <span style={{ fontSize: '9.5pt', color: '#64748b', fontWeight: 'bold' }}>{edu.period} {edu.gpa && `| IPK: ${edu.gpa}`}</span>
                 </div>
               </div>
             ))}
           </div>
         )}
 
+        {/* EXPERIENCE */}
+        {cvData.experience.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 10px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
+              {template === 'graduate' ? t('cvInternship') : t('cvExperience')}
+            </h2>
+            {cvData.experience.map(exp => (
+              <div key={exp.id} style={{ marginBottom: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11pt', fontWeight: 'bold', color: '#0f172a' }}>{exp.title} <span style={{ fontWeight: 'normal', color: theme.secondary }}>({exp.company})</span></span>
+                  <span style={{ fontSize: '9.5pt', color: '#64748b', fontBold: 'bold' }}>{exp.period} | {exp.location}</span>
+                </div>
+                <p style={{ margin: '4px 0 0 0', fontSize: '9.5pt', color: '#475569', textAlign: 'justify', whiteSpace: 'pre-line' }}>{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* EDUCATION (Untuk template default selain freshgrad ditaruh di bawah) */}
+        {template !== 'graduate' && cvData.education.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 8px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
+              {t('cvEducation')}
+            </h2>
+            {cvData.education.map(edu => (
+              <div key={edu.id} style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '10.5pt', fontWeight: 'bold', color: '#0f172a' }}>{edu.degree} — <span style={{ fontWeight: 'normal', color: '#475569' }}>{edu.institution}</span></span>
+                  <span style={{ fontSize: '9.5pt', color: '#64748b', fontBold: 'bold' }}>{edu.period} {edu.gpa && `| IPK: ${edu.gpa}`}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SKILLS */}
         {([...cvData.hardSkills, ...cvData.softSkills].length > 0) && (
-          <div style={{ marginTop: '25px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', letterSpacing: '1px', paddingBottom: '4px', margin: '0 0 8px 0', textTransform: 'uppercase', ...Object.fromEntries(style.text.concat(style.border).split(';').map(s => s.split(':')) as any) }}>
+          <div style={{ marginTop: '20px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 6px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
               {t('cvSkills')}
             </h2>
-            <p style={{ fontSize: '10.5pt', color: '#334155', margin: '0' }}>
+            <p style={{ fontSize: '10pt', color: '#334155', margin: '0' }}>
               {[...cvData.hardSkills, ...cvData.softSkills].join(', ')}
             </p>
           </div>
         )}
 
+        {/* OTHERS */}
         {(cvData.languages || cvData.certifications) && (
-          <div style={{ marginTop: '25px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', letterSpacing: '1px', paddingBottom: '4px', margin: '0 0 8px 0', textTransform: 'uppercase', ...Object.fromEntries(style.text.concat(style.border).split(';').map(s => s.split(':')) as any) }}>
+          <div style={{ marginTop: '20px' }}>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', color: theme.primary, letterSpacing: '0.5px', paddingBottom: '2px', margin: '0 0 6px 0', textTransform: 'uppercase', borderBottom: `1px solid ${theme.line}` }}>
               {t('cvOthers')}
             </h2>
-            {cvData.languages && <p style={{ fontSize: '10pt', margin: '0 0 6px 0', color: '#334155' }}><strong>{t('cvLanguage')}</strong> {cvData.languages}</p>}
-            {cvData.certifications && <p style={{ fontSize: '10pt', margin: '0', color: '#334155', whiteSpace: 'pre-line' }}><strong>{t('cvCertification')}</strong><br/>{cvData.certifications}</p>}
+            {cvData.languages && <p style={{ fontSize: '9.5pt', margin: '0 0 4px 0', color: '#334155' }}><strong>{t('cvLanguage')}</strong> {cvData.languages}</p>}
+            {cvData.certifications && <p style={{ fontSize: '9.5pt', margin: '0', color: '#334155', whiteSpace: 'pre-line' }}><strong>{t('cvCertification')}</strong><br/>{cvData.certifications}</p>}
           </div>
         )}
       </div>
@@ -944,12 +607,12 @@ export default function CVApp() {
   };
 
   return (
-    // 🌟 UPGRADE UI GRADIENT BACKGROUND EXCLUSIVE PADA HALAMAN UTAMA
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-zinc-900 to-slate-950 text-white pb-12 font-sans selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-zinc-900 to-slate-950 text-white pb-12 font-sans selection:bg-cyan-500 selection:text-white text-center">
+      {/* Navbar */}
       <nav className="border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 rounded-xl flex items-center justify-center font-black text-sm shadow-lg shadow-cyan-500/10">HC</div>
+            <div className="w-9 h-9 bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 rounded-xl flex items-center justify-center font-black text-sm">HC</div>
             <div className="font-black text-base tracking-tight">{t('title')}</div>
           </div>
           <div className="flex items-center bg-white/5 rounded-2xl p-0.5 border border-white/10">
@@ -967,6 +630,38 @@ export default function CVApp() {
       <div className="max-w-5xl mx-auto px-4 pt-10">
         <div className="max-w-2xl mx-auto bg-white/[0.01] border border-white/5 p-6 sm:p-10 rounded-[32px] backdrop-blur-3xl shadow-2xl">
           {renderStep()}
+          
+          {/* ========================================================
+              🕌 4. INFAQ BARAKAH ECOSYSTEM BLOCK (ZISWAF CTA MODULAR)
+              ======================================================== */}
+          {currentStep === 4 && (
+            <div className="mt-6 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border border-emerald-500/20 text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-emerald-500/10 text-emerald-400 font-bold text-[8px] tracking-widest px-2.5 py-1 rounded-bl-xl uppercase">Sadaqah Support</div>
+              <h4 className="text-sm font-black text-emerald-400 flex items-center gap-1.5 uppercase tracking-wide">🌱 Dukung Ekosistem Hum-CV</h4>
+              <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                Halo Sahabat Humed! Jika platform rekrutmen mandiri ini dirasa bermanfaat bagi akselerasi persiapan karirmu dan kamu tergerak membantu biaya server generator ini agar tetap 100% bebas biaya bagi alumni SMK/freshgrad lainnya, kamu bisa menyalurkan infaq sukarela melalui rekening resmi praktisi berikut:
+              </p>
+              
+              <div className="mt-4 flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/10 gap-3">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Bank Syariah Indonesia (BSI)</span>
+                  <span className="text-sm font-black tracking-wider text-white mt-0.5">7186886326</span>
+                  <span className="text-[10px] text-slate-400 font-medium">a.n Humaidi Iskandar</span>
+                </div>
+                
+                <button 
+                  onClick={handleCopyNorek}
+                  className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                    copiedNorek ? 'bg-emerald-500 text-slate-950 scale-95' : 'bg-white/5 hover:bg-white/10 text-white'
+                  }`}
+                >
+                  {copiedNorek ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedNorek ? 'Tersalin!' : 'Salin Norek'}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="mt-8 flex items-center border-t border-white/5 pt-6 bg-transparent">
             {currentStep > 1 && <button onClick={prevStep} className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-white cursor-pointer"><ArrowLeft className="w-3.5 h-3.5" /> {t('previous')}</button>}
             {currentStep < 4 && <button onClick={nextStep} className="ml-auto flex items-center gap-1 px-6 py-2.5 bg-white text-black font-black text-xs rounded-xl cursor-pointer hover:scale-[1.02] transition-transform">{t('next')} <ArrowRight className="w-3.5 h-3.5" /></button>}
@@ -980,22 +675,31 @@ export default function CVApp() {
           <div className="bg-white rounded-none sm:rounded-3xl w-full max-w-5xl h-full sm:max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
             <div className="px-5 py-4 border-b flex items-center justify-between bg-white sticky top-0 z-10 text-slate-900">
               <div className="text-left">
-                <div className="font-black text-base md:text-lg">Pratinjau Dokumen Resmi</div>
-                <div className="text-xs text-slate-400 font-medium">Sistem Pembuat CV Otomats ATS-Friendly</div>
+                <div className="font-black text-base md:text-lg">Pratinjau Berkas Dokumen Resmi</div>
+                <div className="text-xs text-slate-400 font-medium">Isolasi Kertas Putih Murni - Standar ATS Rekrutmen</div>
               </div>
+              
               <div className="flex items-center gap-3">
-                <button onClick={() => setSelectedTemplate(p => p === 'classic' ? 'modern' : p === 'modern' ? 'graduate' : 'classic')} className="text-xs font-bold border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 cursor-pointer">Ganti Desain</button>
+                {/* 🌟 STATUS GAYA DESAIN YANG SEDANG AKTIF */}
+                <div className="hidden md:flex flex-col text-right">
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Gaya Aktif:</span>
+                  <span className="text-xs font-black text-teal-600">
+                    {selectedTemplate === 'classic' ? '📋 ATS Klasik' : selectedTemplate === 'modern' ? '✦ Minimalis Modern' : '🎓 Lulusan Baru (Education Top)'}
+                  </span>
+                </div>
+                <button onClick={() => setSelectedTemplate(p => p === 'classic' ? 'modern' : p === 'modern' ? 'graduate' : 'classic')} className="text-xs font-black border border-slate-200 bg-slate-50 px-4 py-2 rounded-xl hover:bg-slate-100 text-slate-700 cursor-pointer transition-all">Ganti Desain</button>
                 <button onClick={() => setShowPreviewModal(false)} className="p-1.5 text-slate-400 hover:text-black hover:bg-slate-100 rounded-full cursor-pointer"><X className="w-5 h-5" /></button>
               </div>
             </div>
 
-            <div className="overflow-auto bg-slate-100 flex-1 p-4 md:p-8 scrollbar-none">
+            <div className="overflow-auto bg-slate-200 flex-1 p-4 md:p-8 scrollbar-none">
               <div className="min-h-full flex items-start justify-center">
                 <PreviewContent template={selectedTemplate} />
               </div>
             </div>
 
             <div className="p-5 border-t bg-white flex flex-col sm:flex-row gap-3">
+              {downloadStatus.message && <div className="w-full text-center text-xs font-bold text-teal-600 mb-2">{downloadStatus.message}</div>}
               <button onClick={downloadPDF} className="flex-1 bg-slate-950 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 hover:bg-black transition-all cursor-pointer">
                 <Download className="w-4 h-4" /> {t('downloadPDF')}
               </button>
@@ -1010,59 +714,36 @@ export default function CVApp() {
       {/* COVER LETTER MODAL */}
       {showCoverModal && (
         <div className="fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[80vh] flex flex-col text-slate-900 shadow-2xl">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col text-slate-900 shadow-2xl">
             <div className="p-6 border-b flex justify-between items-center bg-white rounded-t-3xl">
               <h3 className="font-black text-xl">Surat Lamaran Kerja Otomatis</h3>
               <button onClick={() => setShowCoverModal(false)} className="text-slate-400 cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
+            
             <div className="p-4 bg-slate-50 border-b grid grid-cols-2 gap-3 text-left">
-              <div><label className="text-[10px] font-black text-slate-400 block mb-1 uppercase">Posisi Dilamar</label><input type="text" value={coverJobTitle} onChange={(e) => setCoverJobTitle(e.target.value)} placeholder="Contoh: HR Officer" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-bold" /></div>
-              <div><label className="text-[10px] font-black text-slate-400 block mb-1 uppercase">Perusahaan Tujuan</label><input type="text" value={coverCompany} onChange={(e) => setCoverCompany(e.target.value)} placeholder="Contoh: PT. Pertamina" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-bold" /></div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 block mb-1 uppercase">Posisi Dilamar</label>
+                <input type="text" value={coverJobTitle} onChange={(e) => setCoverJobTitle(e.target.value)} placeholder="Contoh: HR Officer" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 block mb-1 uppercase">Perusahaan Tujuan</label>
+                <input type="text" value={coverCompany} onChange={(e) => setCoverCompany(e.target.value)} placeholder="Contoh: PT. Tokopedia" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-cyan-500" />
+              </div>
             </div>
-            <div className="p-6 overflow-auto flex-1 text-slate-700 whitespace-pre-line text-sm text-left leading-relaxed">
-              {generatedCoverLetter || (language === 'id' ? "Silakan isi posisi dan perusahaan di atas, lalu sistem akan menyusun surat lamaran berdasarkan ringkasan profil Anda." : "Please fill in the job title and company above to auto-generate the cover letter.")}
+
+            <div className="p-6 overflow-auto flex-1 text-slate-700 whitespace-pre-line text-sm text-left leading-relaxed min-h-[150px] bg-white">
+              {generatedCoverLetter || (language === 'id' ? "⚠️ Silakan isi Posisi dan Perusahaan di atas, lalu klik tombol '✨ Susun Surat' di bawah untuk merakit berkas otomatis." : "⚠️ Please fill job title and company above, then click '✨ Susun Surat' to compile your cover letter.")}
             </div>
-            <div className="p-5 border-t bg-white rounded-b-3xl flex gap-3">
-              <button onClick={() => { if(!coverJobTitle || !coverCompany) { alert('Isi data dulu bre'); return; } generateCoverLetter(); }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl text-xs sm:text-sm cursor-pointer">✨ Susun Surat</button>
-              {generatedCoverLetter && <button onClick={() => { navigator.clipboard.writeText(generatedCoverLetter); alert('Tersalin ke Clipboard!'); }} className="flex-1 py-3 border border-slate-200 font-bold rounded-xl text-xs sm:text-sm cursor-pointer">📋 Salin Surat</button>}
+
+            <div className="p-5 border-t bg-slate-50 rounded-b-3xl flex gap-3">
+              <button onClick={generateCoverLetter} className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-black rounded-xl text-xs sm:text-sm cursor-pointer shadow-md">✨ Susun Surat</button>
+              {generatedCoverLetter && (
+                <button onClick={() => { navigator.clipboard.writeText(generatedCoverLetter); alert('Tersalin ke Clipboard!'); }} className="flex-1 py-3 bg-white border border-slate-200 font-bold rounded-xl text-xs sm:text-sm cursor-pointer">📋 Salin ke Clipboard</button>
+              )}
             </div>
           </div>
         </div>
       )}
-
-      {/* PREMIUM MODAL */}
-      {showPremiumModal && (
-        <div className="fixed inset-0 bg-black/80 z-[120] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md text-slate-900 shadow-2xl p-6">
-            <h3 className="text-2xl font-black tracking-tight text-left">Layanan Premium</h3>
-            <p className="text-slate-500 text-xs mt-2 text-left">Kirim berkas ke WhatsApp untuk direview & didesain ulang langsung oleh Ahli Karir HR.</p>
-            <form onSubmit={handlePremiumSubmit} className="mt-4 space-y-3">
-              <input type="text" placeholder="Nama Lengkap" value={premiumForm.name} onChange={(e) => setPremiumForm({ ...premiumForm, name: e.target.value })} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm" required />
-              <input type="tel" placeholder="Nomor WhatsApp" value={premiumForm.whatsapp} onChange={(e) => setPremiumForm({ ...premiumForm, whatsapp: e.target.value })} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm" required />
-              <input type="email" placeholder="Alamat Email" value={premiumForm.email} onChange={(e) => setPremiumForm({ ...premiumForm, email: e.target.value })} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm" required />
-              <button type="submit" className="w-full bg-gradient-to-r from-orange-500 to-rose-500 h-12 text-white font-black rounded-xl flex items-center justify-center gap-2 cursor-pointer mt-4">KIRIM REWIEW KE WHATSAPP <MessageCircle className="w-4 h-4" /></button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 🌟 FIX HIDDEN CONTAINER: DIUBAH MENJADI DIMENSI AMAN A4 PIXEL UNTUK PARSING ENGINE */}
-      <div 
-        ref={exportHiddenRef} 
-        className="fixed pointer-events-none" 
-        style={{ 
-          width: '794px', 
-          position: 'absolute', 
-          top: '0', 
-          left: '0', 
-          zIndex: -50, 
-          opacity: 0,
-          backgroundColor: '#ffffff'
-        }}
-        aria-hidden="true"
-      >
-        <PreviewContent template={selectedTemplate} isExportMode={true} />
-      </div>
     </div>
   );
 }
