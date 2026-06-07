@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, Briefcase, GraduationCap, Award, Sparkles, Download, 
-  Plus, Trash2, ArrowLeft, ArrowRight, Check, FileText, MessageCircle, X, Copy
+  Plus, Trash2, ArrowLeft, ArrowRight, Check, FileText, X, Copy
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -481,6 +481,19 @@ export default function CVApp() {
     }
   };
 
+  const generateCoverLetter = () => {
+    if (!coverJobTitle.trim() || !coverCompany.trim()) {
+      alert(language === 'id' ? '⚠️ Harap isi jabatan dan nama perusahaan tujuan terlebih dahulu bre!' : '⚠️ Please enter target job title and company name first!');
+      return;
+    }
+
+    const letter = language === 'id' 
+      ? `Yth. Bapak/Ibu Hiring Manager,\n\nSaya menulis surat ini untuk melamar posisi ${coverJobTitle} di ${coverCompany}. Dengan latar belakang pendidikan dan kompetensi profesional yang saya miliki, saya yakin dapat memberikan kontribusi yang positif serta solutif bagi kemajuan tim Anda.\n\n${cvData.personal?.summary || ''}\n\nSaya sangat antusias dengan kesempatan untuk bergabung bersama ${coverCompany} dan siap untuk berdiskusi lebih lanjut dalam sesi interview.\n\nHormat saya,\n${cvData.personal?.fullName || ''}`
+      : `Dear Hiring Manager,\n\nI am writing to express my strong interest in the ${coverJobTitle} position at ${coverCompany}. Backed by my educational architecture and core professional competencies, I am confident in my ability to deliver highly impactful solutions to your team.\n\n${cvData.personal?.summary || ''}\n\nI am genuinely excited about the prospect of joining ${coverCompany} and welcome the opportunity for an interview discussion.\n\nBest regards,\n${cvData.personal?.fullName || ''}`;
+
+    setGeneratedCoverLetter(letter);
+  };
+
   // ========================================================
   // 🌟 PREVIEW CONTENT: STRUKTUR MURNI REAKTIF GAYA DESAIN (ANTI-CRASH)
   // ========================================================
@@ -846,7 +859,7 @@ export default function CVApp() {
         <div className="max-w-2xl mx-auto bg-white/[0.01] border border-white/5 p-6 sm:p-10 rounded-[32px] backdrop-blur-3xl shadow-2xl">
           {renderStep()}
           
-          {/* INFAQ SUPPORT BLOCK */}
+          {/* SADAQAH PANEL SUPPORT (100% REAKTIF TANPA PRICING FIX) */}
           {currentStep === 4 && (
             <div className="mt-6 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border border-emerald-500/20 text-left relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-emerald-500/10 text-emerald-400 font-bold text-[8px] tracking-widest px-2.5 py-1 rounded-bl-xl uppercase">Sadaqah Support</div>
