@@ -115,7 +115,7 @@ const DEFAULT_CV: CVData = {
     {
       id: "e1",
       institution: "Universitas Indonesia",
-      degree: "Sarjana Administrasi Bisnis",
+      degree: "Sarjana Administration Bisnis",
       period: "2018 - 2022",
       gpa: "3.85",
     },
@@ -154,7 +154,7 @@ export default function CVApp() {
 
   const t = (key: keyof typeof TRANSLATIONS['id']) => TRANSLATIONS[language][key];
 
-  // Load safely from LocalStorage
+  // Load safely dari LocalStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('humcv-wizard-data');
@@ -170,11 +170,11 @@ export default function CVApp() {
       if (savedStep) setCurrentStep(parseInt(savedStep) as Step);
       if (savedTemplate) setSelectedTemplate(savedTemplate as TemplateType);
     } catch (e) {
-      console.error("Gagal memuat cache lokal, fallback ke default data", e);
+      console.error("Gagal memuat cache lokal, fallback ke data default", e);
     }
   }, []);
 
-  // Auto-save
+  // Auto-save data
   useEffect(() => {
     const timer = setInterval(() => {
       localStorage.setItem('humcv-wizard-data', JSON.stringify(cvData));
@@ -456,10 +456,10 @@ export default function CVApp() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setDownloadStatus({ type: 'docx', message: '✅ File Word (.doc) berhasil diunduh!' });
+      setDownloadStatus({ type: 'docx', message: '¼ File Word (.doc) berhasil diunduh!' });
     } catch (err) {
       console.error('Download DOCX error:', err);
-      setDownloadStatus({ type: 'docx', message: '⚠️ Gagal mengekspor file Word.' });
+      setDownloadStatus({ type: 'docx', message: '☡ Gagal mengekspor file Word.' });
     } finally {
       setTimeout(() => {
         setIsGenerating(false);
@@ -495,7 +495,7 @@ export default function CVApp() {
   };
 
   // ========================================================
-  // 🌟 PREVIEW CONTENT: STRUKTUR MURNI REAKTIF GAYA DESAIN (ANTI-CRASH)
+  // 🌟 PREVIEW CONTENT: STRUKTUR MURNI REAKTIF GAYA DESAIN
   // ========================================================
   const PreviewContent = ({ template }: { template: TemplateType }) => {
     const config = {
@@ -620,220 +620,6 @@ export default function CVApp() {
     );
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl mb-3">
-                <User className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step1')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Mulai dengan informasi dasar Anda</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-left">
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-300 mb-2">Nama Lengkap</label>
-                <input type="text" value={cvData.personal?.fullName || ''} onChange={(e) => updatePersonal('fullName', e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400" placeholder="Sinta Wijaya" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Lokasi</label>
-                <input type="text" value={cvData.personal?.location || ''} onChange={(e) => updatePersonal('location', e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400" placeholder="Jakarta, Indonesia" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Nomor Telepon / WhatsApp</label>
-                <input type="tel" value={cvData.personal?.phone || ''} onChange={(e) => updatePersonal('phone', e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400" placeholder="+62 812-3456-7890" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2">Email</label>
-                <input type="email" value={cvData.personal?.email || ''} onChange={(e) => updatePersonal('email', e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400" placeholder="sinta@email.com" />
-              </div>
-            </div>
-
-            <div className="text-left">
-              <label className="block text-sm font-bold text-slate-300 mb-2">LinkedIn / Portofolio</label>
-              <input type="text" value={cvData.personal?.linkedin || ''} onChange={(e) => updatePersonal('linkedin', e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-400" placeholder="linkedin.com/in/sintawijaya" />
-            </div>
-
-            <div className="text-left">
-              <div className="flex justify-between items-center mb-3">
-                <label className="block text-sm font-bold text-slate-300">Ringkasan Profesional</label>
-                <button onClick={() => optimizeWithAI('summary')} disabled={isOptimizing === 'summary'} className="flex items-center gap-2 text-xs px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-pointer">
-                  <Sparkles className="w-4 h-4" /> {t('optimizeAI')}
-                </button>
-              </div>
-              <textarea value={cvData.personal?.summary || ''} onChange={(e) => updatePersonal('summary', e.target.value)} rows={4} className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-2xl focus:outline-none focus:border-emerald-400 resize-none" placeholder="Tulis ringkasan profesional yang kuat..." />
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl mb-3">
-                <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step2')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Tambahkan riwayat pendidikan Anda</p>
-            </div>
-
-            {(cvData.education || []).map((edu, index) => (
-              <div key={edu.id} className="border border-white/10 bg-white/[0.02] rounded-3xl p-5 relative text-left">
-                <button onClick={() => removeEducation(edu.id)} className="absolute top-5 right-5 text-slate-500 hover:text-red-400 cursor-pointer">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <div className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Pendidikan #{index + 1}</div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Nama Institusi</label>
-                    <input value={edu.institution} onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="Universitas Indonesia" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Gelar / Jurusan</label>
-                    <input value={edu.degree} onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="Sarjana Manajemen" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-2">Periode</label>
-                      <input value={edu.period} onChange={(e) => updateEducation(edu.id, 'period', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="2018 - 2022" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-2">IPK</label>
-                      <input value={edu.gpa} onChange={(e) => updateEducation(edu.id, 'gpa', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="3.85" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button onClick={addEducation} className="w-full py-3.5 border border-dashed border-white/20 hover:border-emerald-500/50 rounded-2xl text-slate-400 hover:text-emerald-400 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-              <Plus className="w-4 h-4" /> {t('add')} Pendidikan
-            </button>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-5 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl mb-3">
-                <Briefcase className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step3')}</h2>
-              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Tambahkan pengalaman kerja atau magang</p>
-            </div>
-
-            {(cvData.experience || []).map((exp, index) => (
-              <div key={exp.id} className="border border-white/10 bg-white/[0.02] rounded-3xl p-5 relative text-left">
-                <button onClick={() => removeExperience(exp.id)} className="absolute top-5 right-5 text-slate-500 hover:text-red-400 cursor-pointer">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <div className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Pengalaman #{index + 1}</div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Jabatan</label>
-                    <input value={exp.title} onChange={(e) => updateExperience(exp.id, 'title', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="Manajer Produk" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Perusahaan</label>
-                    <input value={exp.company} onChange={(e) => updateExperience(exp.id, 'company', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="PT. Teknologi Indonesia" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Lokasi</label>
-                    <input value={exp.location} onChange={(e) => updateExperience(exp.id, 'location', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="Jakarta" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2">Periode</label>
-                    <input value={exp.period} onChange={(e) => updateExperience(exp.id, 'period', e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" placeholder="2022 - Sekarang" />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex justify-between mb-2">
-                    <label className="block text-xs font-bold text-slate-300">Deskripsi Kerja</label>
-                    <button onClick={() => optimizeWithAI('description', exp.id)} className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-lg cursor-pointer">
-                      ✨ AI Optimize
-                    </button>
-                  </div>
-                  <textarea value={exp.description} onChange={(e) => updateExperience(exp.id, 'description', e.target.value)} rows={4} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl" placeholder="Deskripsikan tanggung jawab..." />
-                </div>
-              </div>
-            ))}
-
-            <button onClick={addExperience} className="w-full py-3.5 border border-dashed border-white/20 hover:border-amber-500/50 rounded-2xl text-slate-400 hover:text-amber-400 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-              <Plus className="w-4 h-4" /> {t('add')} Pengalaman
-            </button>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-2xl mb-3">
-                <Award className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('step4')}</h2>
-            </div>
-
-            <div className="space-y-5 text-left">
-              <div>
-                <label className="font-bold text-slate-300 block mb-2">Hard Skills</label>
-                <div className="flex gap-2">
-                  <input id="hardSkill" type="text" placeholder="Contoh: Figma, SQL..." className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" />
-                  <button onClick={() => { const input = document.getElementById('hardSkill') as HTMLInputElement; if (input?.value) { addSkill('hard', input.value); input.value = ''; } }} className="px-6 bg-white text-black font-black rounded-xl text-xs sm:text-sm cursor-pointer">Tambah</button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {(cvData.hardSkills || []).map((s, i) => <span key={i} className="bg-white/5 border border-white/10 px-3 py-1 rounded-lg text-xs flex items-center gap-1.5">{s}<X className="w-3 h-3 text-slate-500 hover:text-red-400 cursor-pointer" onClick={() => removeSkill('hard', s)} /></span>)}
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-300 block mb-2">Soft Skills</label>
-                <div className="flex gap-2">
-                  <input id="softSkill" type="text" placeholder="Contoh: Komunikasi..." className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold" />
-                  <button onClick={() => { const input = document.getElementById('softSkill') as HTMLInputElement; if (input?.value) { addSkill('soft', input.value); input.value = ''; } }} className="px-6 bg-white text-black font-black rounded-xl text-xs sm:text-sm cursor-pointer">Tambah</button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {(cvData.softSkills || []).map((s, i) => <span key={i} className="bg-white/5 border border-white/10 px-3 py-1 rounded-lg text-xs flex items-center gap-1.5">{s}<X className="w-3 h-3 text-slate-500 hover:text-red-400 cursor-pointer" onClick={() => removeSkill('soft', s)} /></span>)}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-300 block mb-2">Bahasa</label>
-                  <textarea value={cvData.languages || ''} onChange={(e) => setCvData(p => ({ ...p, languages: e.target.value }))} className="w-full h-24 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl resize-none" placeholder="Indonesia, Inggris..." />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-300 block mb-2">Sertifikasi</label>
-                  <textarea value={cvData.certifications || ''} onChange={(e) => setCvData(p => ({ ...p, certifications: e.target.value }))} className="w-full h-24 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl resize-none" placeholder="Google Data Analytics..." />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 text-center mt-8">
-              <h3 className="font-black text-lg text-white mb-4">Siap Cetak Ekosistem Resume Anda?</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onClick={generatePreview} className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-teal-500/10">
-                  <Check className="w-4 h-4" /> {t('generatePreview')}
-                </button>
-                <button onClick={() => { setCoverJobTitle(""); setCoverCompany(""); setGeneratedCoverLetter(""); setShowCoverModal(true); }} className="bg-white/5 border border-white/10 text-slate-300 font-medium h-14 rounded-2xl flex items-center justify-center gap-2 cursor-pointer">
-                  <FileText className="w-4 h-4" /> {t('coverLetter')}
-                </button>
-              </div>
-              <button onClick={resetData} className="text-xs text-red-400 font-bold hover:underline mt-4 block mx-auto cursor-pointer">✕ Reset Formulir ke Kosong</button>
-            </div>
-          </div>
-        );
-      default: return null;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-zinc-900 to-slate-950 text-white pb-12 font-sans selection:bg-cyan-500 selection:text-white text-center">
       {/* Navbar */}
@@ -859,7 +645,7 @@ export default function CVApp() {
         <div className="max-w-2xl mx-auto bg-white/[0.01] border border-white/5 p-6 sm:p-10 rounded-[32px] backdrop-blur-3xl shadow-2xl">
           {renderStep()}
           
-          {/* SADAQAH PANEL SUPPORT (100% REAKTIF TANPA PRICING FIX) */}
+          {/* SADAQAH PANEL SUPPORT (100% HIENIS - TANPA PRICING MODAL) */}
           {currentStep === 4 && (
             <div className="mt-6 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border border-emerald-500/20 text-left relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-emerald-500/10 text-emerald-400 font-bold text-[8px] tracking-widest px-2.5 py-1 rounded-bl-xl uppercase">Sadaqah Support</div>
