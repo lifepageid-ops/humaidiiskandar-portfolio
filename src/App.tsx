@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-// 🌟 BARU: Ditambahkan ikon 'FileText' untuk representasi CV ATS lo
-import { BookOpen, LayoutGrid, Calculator, Landmark, ArrowRight, ArrowLeft, FileText } from "lucide-react";
+import { BookOpen, Calculator, Landmark, ArrowRight, ArrowLeft, FileText } from "lucide-react";
 
 // --- Komponen Portofolio Asli ---
 import Navbar from "./components/Navbar";
@@ -21,15 +20,14 @@ import FloatingContact from "./components/FloatingContact";
 // --- Aplikasi Ekosistem ---
 import FinanceApp from './modules/finance/src/App';
 import PayrollApp from './modules/payroll/src/App';
-import CVApp from './modules/cv-generator/CVApp'; // 🌟 BARU: IMPORT MESIN GENERATOR CV LO DI SINI BRE!
-import { FinanceGate } from './components/FinanceGate'; // Pengunci Premium Psikologis Gen Z
+import CVApp from './modules/cv-generator/CVApp'; 
+import { FinanceGate } from './components/FinanceGate'; 
 
 // ==========================================
 // 1. KOMPONEN HALAMAN HUMED BERBAGI (3-APPS UPGRADED GRID)
 // ==========================================
 const HumedBerbagi = () => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center pt-24 p-6 font-sans transition-colors duration-300 relative overflow-hidden">
-    {/* Dekorasi Background */}
     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/20 dark:bg-teal-900/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60"></div>
     
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl w-full text-center mb-16 relative z-10">
@@ -39,7 +37,6 @@ const HumedBerbagi = () => (
       </p>
     </motion.div>
     
-    {/* 🌟 UBAH: Layout grid di-upgrade menjadi 3 kolom (lg:grid-cols-3) dan max-w diperluas ke 6xl */}
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.2 }}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl mb-16 relative z-10 text-left"
@@ -76,11 +73,9 @@ const HumedBerbagi = () => (
         </div>
       </Link>
 
-      {/* 🌟 CARD 3 BARU: CV GENERATOR SYSTEM (PREMIUM DESIGN ACCENT) */}
+      {/* CARD 3: CV GENERATOR SYSTEM */}
       <Link to="/humed-berbagi/cv-generator" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between items-start gap-4 transition-all hover:border-cyan-400 dark:hover:border-cyan-500 hover:-translate-y-1 group cursor-pointer relative overflow-hidden">
-        {/* Badge Penarik Perhatian */}
         <div className="absolute top-0 right-0 bg-cyan-500 text-white text-[9px] font-black px-2 py-0.5 rounded-bl-xl uppercase tracking-wider animate-pulse">Bilingual</div>
-        
         <div className="flex items-start gap-4">
           <div className="p-3.5 bg-cyan-50 dark:bg-cyan-900/50 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
             <FileText className="text-cyan-600 dark:text-cyan-400 w-6 h-6" />
@@ -102,9 +97,6 @@ const HumedBerbagi = () => (
   </div>
 );
 
-// ==========================================
-// 2. KOMPONEN HALAMAN BACAIN
-// ==========================================
 const Bacain = () => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center font-sans transition-colors duration-300">
     <BookOpen className="w-20 h-20 text-orange-500 dark:text-orange-400 mb-8 animate-bounce" />
@@ -138,12 +130,15 @@ export default function App() {
       document.documentElement.classList.remove("dark");
     }
 
+    // Bypass loader safe valve
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+
     const img = new Image();
     img.src = "/images/humaidi.png";
     img.onload = () => {
-      setTimeout(() => setIsLoading(false), 1500);
+      setIsLoading(false);
+      clearTimeout(timer);
     };
-    const timer = setTimeout(() => setIsLoading(false), 1800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -163,16 +158,12 @@ export default function App() {
 
   const handleViewProjects = () => {
     const projectsSection = document.getElementById("projects");
-    if (projectsSection) {
-      projectsSection.scrollIntoView({ behavior: "smooth" });
-    }
+    if (projectsSection) projectsSection.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleContactMe = () => {
     const contactSection = document.getElementById("contact");
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" });
-    }
+    if (contactSection) contactSection.scrollIntoView({ behavior: "smooth" });
   };
 
   // --- Layout Portofolio Utama ---
@@ -251,13 +242,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<PortfolioMain />} />
         <Route path="/humed-berbagi" element={<HumedBerbagi />} />
-        {/* Jalur finance diamankan gembok premium psikologis */}
         <Route path="/humed-berbagi/finance" element={<FinanceGate><FinanceApp /></FinanceGate>} /> 
         <Route path="/humed-berbagi/payroll" element={<PayrollApp />} />
-        
-        {/* 🌟 BARU: MENDAFTARKAN JALUR RUTE UNTUK REKTOR CV MAKER SUTIKAN LO DI SINI BRE! */}
         <Route path="/humed-berbagi/cv-generator" element={<CVApp />} />
-        
         <Route path="/bacain" element={<Bacain />} />
       </Routes>
     </Router>
